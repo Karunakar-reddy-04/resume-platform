@@ -81,22 +81,65 @@ const PREFERRED_SECTIONS = [
 // ── Keyword extraction ───────────────────────────────────────────────────────
 
 const ALL_TECH_KEYWORDS = [
+  // Languages
   'javascript','typescript','python','java','kotlin','go','golang','rust','c++','c#','ruby','php','scala',
-  'react','angular','vue','next.js','nextjs','html','css','tailwind','bootstrap','webpack','redux','graphql',
-  'node.js','nodejs','express','fastapi','django','flask','spring','spring boot','rails','asp.net','.net','nestjs',
-  'sql','postgresql','mysql','mongodb','redis','elasticsearch','cassandra','dynamodb','sqlite','firebase',
-  'pandas','numpy','scikit-learn','tensorflow','pytorch','spark','kafka','airflow','dbt','snowflake','bigquery',
-  'aws','azure','gcp','docker','kubernetes','k8s','terraform','ansible','jenkins','github actions','helm',
-  'jest','pytest','junit','selenium','cypress','playwright','jmeter',
-  'git','jira','agile','scrum','ci/cd','devops','microservices','tdd','rest api','grpc',
-  'machine learning','deep learning','nlp','data engineering','etl','api design','linux','unix',
+  'swift','perl','bash','shell','groovy','pl/sql',
+  // Java ecosystem
+  'java 8','java 11','java 17','java 21','j2ee','jee','servlets','jvm',
+  'spring','spring boot','spring mvc','spring security','spring cloud','spring data',
+  'spring framework','spring core','spring batch','spring webflux','hibernate','jpa','jdbc','ejb','jms',
+  'dependency injection','inversion of control','ioc','aop','aspect oriented programming',
+  'design patterns','factory pattern','singleton pattern','dao','dto','pojo',
+  'oop','object oriented','oops','solid principles','solid',
+  'multithreading','concurrency','thread pool','executor service','synchronized','volatile',
+  'collections','generics','lambda','streams','functional programming','java streams',
+  'exception handling','serialization','deserialization','json','xml','yaml',
+  'maven','gradle','build tools',
+  'junit','mockito','testng','rest assured','sonarqube',
+  'tomcat','jetty','websphere','weblogic','jboss','wildfly',
+  // Frontend
+  'react','angular','vue','next.js','nextjs','html','css','tailwind','bootstrap','webpack','redux',
+  // Backend
+  'node.js','nodejs','express','fastapi','django','flask','rails','asp.net','.net','nestjs',
+  // APIs
+  'rest','restful','rest api','restful api','soap','graphql','grpc','websocket',
+  'api design','api gateway','openapi','swagger','postman','http','https',
+  'api versioning','microservices','request validation','http methods','status codes',
+  // Databases
+  'sql','postgresql','mysql','mongodb','redis','elasticsearch','cassandra',
+  'dynamodb','sqlite','firebase','oracle','mariadb','snowflake','bigquery','redshift',
+  'query optimization','indexing','stored procedures','transactions',
+  // Cloud and DevOps
+  'aws','azure','gcp','docker','kubernetes','k8s','terraform','ansible',
+  'jenkins','github actions','gitlab ci','circleci','helm','ci/cd','devops',
+  'serverless','lambda','ec2','s3','openshift','nginx','linux','unix',
+  // Messaging
+  'kafka','rabbitmq','activemq','sqs','event driven','event-driven','message queue','asynchronous',
+  // Data and ML
+  'pandas','numpy','scikit-learn','tensorflow','pytorch','spark','airflow','dbt','etl',
+  'machine learning','deep learning','nlp','data engineering','rag',
+  // Testing
+  'jest','pytest','selenium','cypress','playwright','jmeter','unit testing','tdd','bdd',
+  // Tools and Practices
+  'git','jira','agile','scrum','kanban','system design','distributed systems',
+  'data structures','algorithms','data power','datapower',
+  // Security
+  'oauth','oauth2','jwt','saml','sso','spring security','authentication','authorization',
 ]
 
 function extractKeywords(text: string): string[] {
-  const lower = text.toLowerCase()
+  // Normalize: strip bullet chars, normalize whitespace
+  const normalized = text
+    .replace(/[\u2022\u2013\u25ba\u25b8\u2713\u2714]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+
   return ALL_TECH_KEYWORDS.filter(kw => {
     const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    return new RegExp(`\\b${escaped}\\b`).test(lower)
+    const pattern = kw.includes(' ')
+      ? new RegExp(escaped)
+      : new RegExp(`\\b${escaped}\\b`)
+    return pattern.test(normalized)
   })
 }
 
