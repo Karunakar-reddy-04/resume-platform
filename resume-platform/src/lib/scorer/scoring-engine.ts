@@ -102,30 +102,68 @@ function scoreSemantic(resume: StructuredResume, jd: StructuredJD) {
 
 // ── Component 3: Qualification Fit (20%) ─────────────────────────────────────
 
+// Core qualifications that should always be checked from JD text directly
+const CORE_QUAL_PATTERNS = [
+  { label: 'Java proficiency', pattern: /\bjava\b/i, resumePattern: /\bjava\b/i },
+  { label: 'Spring Boot', pattern: /spring\s*boot/i, resumePattern: /spring\s*boot/i },
+  { label: 'Spring MVC', pattern: /spring\s*mvc/i, resumePattern: /spring\s*mvc/i },
+  { label: 'Spring Framework', pattern: /spring\s*(framework|core|mvc|boot)/i, resumePattern: /spring/i },
+  { label: 'REST API development', pattern: /rest(ful)?\s*api/i, resumePattern: /rest(ful)?\s*api/i },
+  { label: 'OOP / Object-Oriented', pattern: /object.oriented|\boop\b|oops/i, resumePattern: /object.oriented|\boop\b|oops/i },
+  { label: 'Multithreading', pattern: /multithreading|multi-threading/i, resumePattern: /multithreading|concurrent/i },
+  { label: 'Design patterns', pattern: /design\s*pattern/i, resumePattern: /design\s*pattern/i },
+  { label: 'Exception handling', pattern: /exception\s*handling/i, resumePattern: /exception|error\s*handling/i },
+  { label: 'Microservices', pattern: /microservice/i, resumePattern: /microservice/i },
+  { label: 'Hibernate / JPA', pattern: /hibernate|\bjpa\b/i, resumePattern: /hibernate|\bjpa\b/i },
+  { label: 'SQL / Database', pattern: /\bsql\b|database/i, resumePattern: /\bsql\b|database|postgresql|oracle|mysql/i },
+  { label: 'Docker / Kubernetes', pattern: /docker|kubernetes/i, resumePattern: /docker|kubernetes/i },
+  { label: 'AWS / Cloud', pattern: /\baws\b|cloud/i, resumePattern: /\baws\b|cloud|azure|gcp/i },
+  { label: 'CI/CD', pattern: /ci\/cd|jenkins|github\s*actions/i, resumePattern: /ci\/cd|jenkins|github\s*actions|gitlab/i },
+  { label: 'Swagger / OpenAPI', pattern: /swagger|openapi/i, resumePattern: /swagger|openapi/i },
+  { label: 'Dependency Injection', pattern: /dependency\s*injection|\bioc\b/i, resumePattern: /dependency\s*injection|spring|ioc/i },
+  { label: 'Postman / API Testing', pattern: /postman|rest\s*assured|api\s*testing/i, resumePattern: /postman|rest\s*assured|junit|mockito/i },
+  { label: 'Git', pattern: /\bgit\b/i, resumePattern: /\bgit\b/i },
+  { label: 'Agile / Scrum', pattern: /agile|scrum/i, resumePattern: /agile|scrum/i },
+]
+
 function scoreQualifications(resume: StructuredResume, jd: StructuredJD) {
   const resumeText = resume.rawText.toLowerCase()
+  const jdText = jd.rawText.toLowerCase()
   const met: string[] = []
   const missingQuals: string[] = []
 
+  // First: check bullet-point extracted requirements (if any exist)
   for (const req of jd.requiredQualifications) {
     const reqLower = req.toLowerCase()
-    // Check if key words from the requirement appear in resume
     const words = reqLower.split(/\s+/).filter(w => w.length > 4)
     const matchCount = words.filter(w => resumeText.includes(w)).length
     if (matchCount >= Math.ceil(words.length * 0.5)) {
-      met.push(req)
+      met.push(req.slice(0, 60))
     } else {
-      missingQuals.push(req)
+      missingQuals.push(req.slice(0, 60))
+    }
+  }
+
+  // Second: always run core pattern matching against JD text (catches non-bulleted JDs)
+  // Only add patterns that are actually mentioned in the JD
+  for (const qual of CORE_QUAL_PATTERNS) {
+    if (!qual.pattern.test(jdText)) continue // JD doesn't require this — skip
+    const alreadyCovered = met.some(m => m.toLowerCase().includes(qual.label.toLowerCase().split('/')[0].trim()))
+    if (alreadyCovered) continue
+    if (qual.resumePattern.test(resumeText)) {
+      met.push(qual.label)
+    } else {
+      missingQuals.push(qual.label)
     }
   }
 
   // Education match
   const hasDegree = resume.education.length > 0
-  const jdWantsDegree = /bachelor|master|degree|bs|ms|phd/i.test(jd.rawText)
+  const jdWantsDegree = /bachelor|master|degree|\bbs\b|\bms\b|phd/i.test(jd.rawText)
   if (jdWantsDegree && hasDegree) met.push('Degree requirement met')
   else if (jdWantsDegree && !hasDegree) missingQuals.push('Degree may be required')
 
-  const total = Math.max(jd.requiredQualifications.length + (jdWantsDegree ? 1 : 0), 1)
+  const total = Math.max(met.length + missingQuals.length, 1)
   const score = Math.min((met.length / total) * 100, 100)
 
   return { score, met, missing: missingQuals }
