@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String       @id @default(cuid())
+  email      String       @unique
+  password   String
+  name       String
+  createdAt  DateTime     @default(now())
+  buckets    RoleBucket[]
+  jobBatches JobBatch[]
+}
+
+model RoleBucket {
+  id          String   @id @default(cuid())
+  userId      String
+  roleName    String
+  description String?
+  color       String   @default("#1A56A0")
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumes     Resume[]
+}
+
+model Resume {
+  id              String        @id @default(cuid())
+  bucketId        String
+  displayName     String
+  focusLabel      String?
+  activeVersionId String?
+  status          String        @default("active")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  bucket          RoleBucket    @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  versions        ResumeVersion[]
+  matchResults    MatchResult[]
+}
+
+model ResumeVersion {
+  id             String   @id @default(cuid())
+  resumeId       String
+  versionNumber  Int
+  fileUrl        String
+  fileName       String
+  fileType       String
+  extractedText  String   @db.Text
+  structuredJson Json
+  createdAt      DateTime @default(now())
+  resume         Resume        @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  matchResults   MatchResult[]
+}
+
+model JobBatch {
+  id        String           @id @default(cuid())
+  userId    String
+  status    String           @default("pending")
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs      JobDescription[]
+}
+
+model JobDescription {
+  id            String        @id @default(cuid())
+  batchId       String?
+  sourceUrl     String?
+  title         String?
+  company       String?
+  location      String?
+  rawText       String        @db.Text
+  extractedJson Json?
+  roleFamily    String?
+  subRole       String?
+  status        String        @default("pending")
+  createdAt     DateTime      @default(now())
+  batch         JobBatch?     @relation(fields: [batchId], references: [id])
+  matchResults  MatchResult[]
+}
+
+model MatchResult {
+  id                 String   @id @default(cuid())
+  jdId               String
+  resumeId           String
+  resumeVersionId    String
+  overallScore       Float
+  atsScore           Float
+  keywordScore       Float
+  semanticScore      Float
+  qualificationScore Float
+  experienceScore    Float
+  contextScore       Float
+  matchedKeywords    Json
+  missingKeywords    Json
+  matchedSkills      Json
+  missingSkills      Json
+  visaFlag           String?
+  securityFlag       String?
+  flagsJson          Json?
+  scoreBreakdown     Json
+  createdAt          DateTime @default(now())
+  jd            JobDescription @relation(fields: [jdId], references: [id], onDelete: Cascade)
+  resume        Resume         @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeVersion ResumeVersion  @relation(fields: [resumeVersionId], references: [id], onDelete: Cascade)
+}

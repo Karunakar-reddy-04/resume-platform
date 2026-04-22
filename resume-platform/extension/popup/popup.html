@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeMatch</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; width: 380px; min-height: 200px; background: #f9fafb; color: #111; }
+
+    .header { background: #1A56A0; color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+    .header-logo { width: 28px; height: 28px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .header-title { font-size: 15px; font-weight: 700; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+
+    .body { padding: 14px 16px; }
+
+    .page-info { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .page-info-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .page-info-sub { font-size: 11px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .site-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; margin-bottom: 6px; }
+    .site-linkedin { background: #dbeafe; color: #1d4ed8; }
+    .site-indeed { background: #fef3c7; color: #92400e; }
+    .site-greenhouse { background: #d1fae5; color: #065f46; }
+    .site-lever { background: #ede9fe; color: #5b21b6; }
+    .site-workday { background: #fee2e2; color: #991b1b; }
+    .site-other { background: #f3f4f6; color: #374151; }
+
+    .btn { width: 100%; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }
+    .btn-primary { background: #1A56A0; color: white; }
+    .btn-primary:hover { background: #1e3a6e; }
+    .btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #f9fafb; }
+    .btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 12px 0; }
+
+    .batch-section { margin-bottom: 12px; }
+    .batch-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .batch-title { font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; }
+    .batch-count { background: #1A56A0; color: white; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 700; }
+
+    .batch-item { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: center; gap-8px; }
+    .batch-item-info { flex: 1; min-width: 0; }
+    .batch-item-title { font-size: 12px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .batch-item-sub { font-size: 10px; color: #9ca3af; }
+    .batch-item-remove { background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; border-radius: 4px; flex-shrink: 0; }
+    .batch-item-remove:hover { color: #dc2626; background: #fef2f2; }
+
+    .status { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-bottom: 10px; }
+    .status-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .status-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .status-loading { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+    .footer { padding: 10px 16px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .footer-link { font-size: 11px; color: #1A56A0; text-decoration: none; font-weight: 500; }
+    .footer-link:hover { text-decoration: underline; }
+
+    .not-job-page { text-align: center; padding: 24px 16px; color: #6b7280; }
+    .not-job-page-icon { font-size: 32px; margin-bottom: 8px; }
+    .not-job-page-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px; }
+    .not-job-page-sub { font-size: 11px; }
+
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #app-url-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+    #app-url-input { flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 11px; color: #374151; }
+    #save-url-btn { padding: 6px 10px; background: #1A56A0; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    #save-url-btn:hover { background: #1e3a6e; }
+    .url-label { font-size: 10px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo">📄</div>
+    <div>
+      <div class="header-title">ResumeMatch</div>
+      <div class="header-sub">JD Capture Tool</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div id="status-msg" style="display:none" class="status"></div>
+    <div id="main-content"></div>
+  </div>
+
+  <div class="footer">
+    <a id="open-app" href="#" class="footer-link" target="_blank">Open ResumeMatch ↗</a>
+    <span id="batch-footer-count" style="font-size:11px;color:#6b7280;"></span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
